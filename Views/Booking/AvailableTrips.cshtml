@@ -1,0 +1,109 @@
+@model IEnumerable<BusBookingWebApp.Models.Schedule>
+
+@{
+    ViewData["Title"] = "Available Trips";
+    string fromQuery = Context?.Request?.Query["from"].ToString() ?? "";
+    string toQuery = Context?.Request?.Query["to"].ToString() ?? "";
+}
+
+<div class="container">
+    <div class="trip-toolbar reveal">
+        <div>
+            <div class="page-kicker">Search results</div>
+            <h1 class="section-title mb-2">Available trips</h1>
+            <p class="section-copy mb-0">Compare timings, seats, amenities, and fares in one clean view.</p>
+        </div>
+        <a href="/Bus/List" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat me-2"></i>All trips</a>
+    </div>
+
+    <form method="get" class="trip-search mb-4 reveal">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label" for="from">From</label>
+                <div class="input-shell">
+                    <i class="bi bi-geo-alt"></i>
+                    <input id="from" name="from" placeholder="From" value="@fromQuery" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="to">To</label>
+                <div class="input-shell">
+                    <i class="bi bi-pin-map"></i>
+                    <input id="to" name="to" placeholder="To" value="@toQuery" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-2"></i>Search</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state reveal">
+            <span class="icon-box mb-3"><i class="bi bi-calendar-x"></i></span>
+            <h4 class="fw-bold">No trips found</h4>
+            <p class="text-secondary mb-0">Try adjusting your route and search again.</p>
+        </div>
+    }
+    else
+    {
+        <div class="trip-list">
+            @foreach (var s in Model)
+            {
+                var route = s.Bus?.Route;
+                var seatsBooked = s.Bookings?.Sum(b => b.SeatsBooked) ?? 0;
+                var availableSeats = Math.Max((s.Bus?.TotalSeats ?? 0) - seatsBooked, 0);
+                var duration = s.ArrivalTime - s.DepartureTime;
+                var durationText = duration.TotalMinutes > 0 ? $"{(int)duration.TotalHours}h {duration.Minutes}m" : "Flexible";
+
+                <article class="trip-card reveal">
+                    <div class="trip-card-main">
+                        <div>
+                            <h2 class="bus-name">@(s.Bus?.Name ?? "Premium Coach")</h2>
+                            <span class="bus-type"><i class="bi bi-bus-front"></i>@(s.Bus?.BusType ?? "AC Seater")</span>
+                            <div class="trip-meta">
+                                <span class="meta-pill"><i class="bi bi-star-fill text-warning"></i>4.7 rated</span>
+                                <span class="meta-pill"><i class="bi bi-plug"></i>Charging</span>
+                                <span class="meta-pill"><i class="bi bi-cup-hot"></i>Refreshments</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="route-line">
+                                <div class="route-dot">
+                                    <i class="bi bi-circle-fill text-primary small"></i>
+                                    <div>
+                                        <strong>@(route?.From ?? "Origin")</strong>
+                                        <div class="text-secondary small">@s.DepartureTime.ToString("hh:mm tt")</div>
+                                    </div>
+                                </div>
+                                <div class="route-connector"></div>
+                                <div class="route-dot">
+                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                    <div>
+                                        <strong>@(route?.To ?? "Destination")</strong>
+                                        <div class="text-secondary small">@s.ArrivalTime.ToString("hh:mm tt")</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trip-meta">
+                                <span class="meta-pill"><i class="bi bi-clock"></i>@durationText</span>
+                                <span class="meta-pill"><i class="bi bi-person-check"></i>@availableSeats seats</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="fare">Rs. @s.Fare<small>/seat</small></div>
+                            <span class="status-badge success"><i class="bi bi-check-circle-fill"></i>Available</span>
+                        </div>
+                        <a class="btn btn-primary px-4"
+                           asp-controller="Booking"
+                           asp-action="Book"
+                           asp-route-scheduleId="@s.Id">
+                            Book Now
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</div>

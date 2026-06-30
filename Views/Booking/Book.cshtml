@@ -1,0 +1,242 @@
+@model BusBookingWebApp.Models.Schedule
+
+@{
+    ViewData["Title"] = "Book Trip";
+    var totalSeats = (int)ViewBag.TotalSeats;
+    var bookedSeats = ViewBag.BookedSeats as List<int> ?? new();
+    var chosenDateStr = ViewBag.TravelDate as string ?? Model.DepartureTime.ToString("yyyy-MM-dd");
+    var fareValue = Model.Fare.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var route = Model.Bus?.Route;
+}
+
+<div class="container">
+    <div class="trip-toolbar reveal">
+        <div>
+            <div class="page-kicker">Seat selection</div>
+            <h1 class="section-title mb-2">Book your trip</h1>
+            <p class="section-copy mb-0">Pick your seats, review the fare, and continue with the preserved booking flow.</p>
+        </div>
+        <span class="status-badge success"><i class="bi bi-lock-fill"></i>Secure checkout</span>
+    </div>
+
+    <div class="booking-grid">
+        <div class="premium-card p-4 p-lg-5 reveal">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+                <div>
+                    <h2 class="bus-name">@(Model.Bus?.Name ?? "Premium Coach")</h2>
+                    <span class="bus-type"><i class="bi bi-bus-front"></i>@(Model.Bus?.BusType ?? "AC Seater")</span>
+                </div>
+                <div class="text-md-end">
+                    <div class="fare">Rs. @Model.Fare<small>/seat</small></div>
+                    <div class="text-secondary small">Base fare before GST</div>
+                </div>
+            </div>
+
+            <div class="route-line mb-4">
+                <div class="route-dot">
+                    <i class="bi bi-circle-fill text-primary small"></i>
+                    <div>
+                        <strong>@(route?.From ?? "Origin")</strong>
+                        <div class="text-secondary small">@Model.DepartureTime.ToString("hh:mm tt")</div>
+                    </div>
+                </div>
+                <div class="route-connector"></div>
+                <div class="route-dot">
+                    <i class="bi bi-geo-alt-fill text-success"></i>
+                    <div>
+                        <strong>@(route?.To ?? "Destination")</strong>
+                        <div class="text-secondary small">@Model.ArrivalTime.ToString("hh:mm tt")</div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Book" method="post" id="bookingForm">
+                <input type="hidden" name="scheduleId" value="@Model.Id" />
+                <input type="hidden" id="selectedSeatsCsv" name="selectedSeatsCsv" />
+                <input type="hidden" id="formTravelDate" name="travelDate" value="@chosenDateStr" />
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label" for="customerName">Passenger Name</label>
+                        <div class="input-shell">
+                            <i class="bi bi-person"></i>
+                            <input id="customerName" type="text" name="customerName" class="form-control" placeholder="Enter full name" required />
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="travelDate">Travel Date</label>
+                        <div class="input-shell">
+                            <i class="bi bi-calendar-event"></i>
+                            <input id="travelDate" type="date" class="form-control" value="@chosenDateStr" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seat-layout-shell">
+                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                        <div>
+                            <h3 class="fw-bold mb-1">Select seat(s)</h3>
+                            <p class="text-secondary mb-0">Available seats are green, selected seats turn blue.</p>
+                        </div>
+                        <div class="seat-legend">
+                            <span class="legend-item"><span class="legend-swatch"></span>Available</span>
+                            <span class="legend-item"><span class="legend-swatch booked"></span>Booked</span>
+                            <span class="legend-item"><span class="legend-swatch selected"></span>Selected</span>
+                            <span class="legend-item"><span class="legend-swatch ladies"></span>Ladies</span>
+                        </div>
+                    </div>
+
+                    <div class="seat-map" aria-label="Seat map">
+                        @for (int i = 1; i <= totalSeats; i++)
+                        {
+                            var isBooked = bookedSeats.Contains(i);
+                            var seatClass = isBooked ? "seat booked" : "seat available";
+                            <button type="button" class="@seatClass" data-seat="@i" title="Seat @i" aria-label="Seat @i">@i</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="payment-grid mt-4">
+                    <label class="payment-option">
+                        <input type="radio" name="uiPaymentMethod" checked />
+                        <span class="icon-box mb-3"><i class="bi bi-phone"></i></span>
+                        <strong class="d-block">UPI</strong>
+                        <span class="text-secondary small">Fast mobile payment</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="uiPaymentMethod" />
+                        <span class="icon-box mb-3"><i class="bi bi-credit-card"></i></span>
+                        <strong class="d-block">Credit Card</strong>
+                        <span class="text-secondary small">Visa, Mastercard</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="uiPaymentMethod" />
+                        <span class="icon-box mb-3"><i class="bi bi-credit-card-2-back"></i></span>
+                        <strong class="d-block">Debit Card</strong>
+                        <span class="text-secondary small">Bank card checkout</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="uiPaymentMethod" />
+                        <span class="icon-box mb-3"><i class="bi bi-bank"></i></span>
+                        <strong class="d-block">Net Banking</strong>
+                        <span class="text-secondary small">All major banks</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="uiPaymentMethod" />
+                        <span class="icon-box mb-3"><i class="bi bi-wallet2"></i></span>
+                        <strong class="d-block">Wallet</strong>
+                        <span class="text-secondary small">Rewards ready</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">
+                    <i class="bi bi-check2-circle me-2"></i>Continue Booking
+                </button>
+            </form>
+        </div>
+
+        <aside class="summary-card reveal">
+            <div class="page-kicker">Booking summary</div>
+            <h2 class="fw-bold mb-4">Price breakdown</h2>
+            <div class="summary-row">
+                <span>Passenger details</span>
+                <strong id="passengerSummary">Pending</strong>
+            </div>
+            <div class="summary-row">
+                <span>Selected seats</span>
+                <strong id="seatSummary">None</strong>
+            </div>
+            <div class="summary-row">
+                <span>Seat count</span>
+                <strong id="seatCount">0</strong>
+            </div>
+            <div class="summary-row">
+                <span>Fare subtotal</span>
+                <strong id="fareSubtotal">Rs. 0.00</strong>
+            </div>
+            <div class="summary-row">
+                <span>GST</span>
+                <strong id="gstAmount">Rs. 0.00</strong>
+            </div>
+            <div class="summary-row">
+                <span>Discount</span>
+                <strong id="discountAmount">- Rs. 0.00</strong>
+            </div>
+            <div class="summary-row total-row">
+                <span>Total Amount</span>
+                <strong id="totalAmount">Rs. 0.00</strong>
+            </div>
+            <p class="text-secondary small mt-3 mb-0">Final backend booking uses the selected seats and fare already defined for this schedule.</p>
+        </aside>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const selectedSet = new Set();
+            const selectedSeatsInput = document.getElementById('selectedSeatsCsv');
+            const formTravelDate = document.getElementById('formTravelDate');
+            const travelDateInput = document.getElementById('travelDate');
+            const customerNameInput = document.getElementById('customerName');
+            const fare = Number('@fareValue');
+            const formatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
+            const seatSummary = document.getElementById('seatSummary');
+            const seatCount = document.getElementById('seatCount');
+            const fareSubtotal = document.getElementById('fareSubtotal');
+            const gstAmount = document.getElementById('gstAmount');
+            const discountAmount = document.getElementById('discountAmount');
+            const totalAmount = document.getElementById('totalAmount');
+            const passengerSummary = document.getElementById('passengerSummary');
+
+            function updateSummary() {
+                const seats = Array.from(selectedSet).sort((a, b) => Number(a) - Number(b));
+                const subtotal = seats.length * fare;
+                const gst = subtotal * 0.05;
+                const discount = seats.length >= 3 ? subtotal * 0.08 : 0;
+                const total = subtotal + gst - discount;
+
+                selectedSeatsInput.value = seats.join(',');
+                seatSummary.textContent = seats.length ? seats.join(', ') : 'None';
+                seatCount.textContent = seats.length;
+                fareSubtotal.textContent = formatter.format(subtotal);
+                gstAmount.textContent = formatter.format(gst);
+                discountAmount.textContent = `- ${formatter.format(discount)}`;
+                totalAmount.textContent = formatter.format(total);
+                passengerSummary.textContent = customerNameInput.value.trim() || 'Pending';
+            }
+
+            document.querySelectorAll('.seat.available').forEach(seat => {
+                seat.addEventListener('click', () => {
+                    const n = seat.dataset.seat;
+                    if (selectedSet.has(n)) {
+                        selectedSet.delete(n);
+                        seat.classList.remove('selected');
+                    } else {
+                        selectedSet.add(n);
+                        seat.classList.add('selected');
+                    }
+                    updateSummary();
+                });
+            });
+
+            customerNameInput.addEventListener('input', updateSummary);
+
+            document.getElementById('bookingForm').addEventListener('submit', function () {
+                formTravelDate.value = travelDateInput.value;
+                updateSummary();
+            });
+
+            travelDateInput.addEventListener('change', function () {
+                const dt = travelDateInput.value;
+                const params = new URLSearchParams(window.location.search);
+                params.set('scheduleId', '@Model.Id');
+                params.set('travelDate', dt);
+                window.location = `${window.location.pathname}?${params.toString()}`;
+            });
+
+            updateSummary();
+        })();
+    </script>
+}

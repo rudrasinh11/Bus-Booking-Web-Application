@@ -1,0 +1,49 @@
+@model BusBookingWebApp.Models.Schedule
+
+@{
+    ViewData["Title"] = "Trip Details";
+    var route = Model.Bus?.Route;
+    var duration = Model.ArrivalTime - Model.DepartureTime;
+    var durationText = duration.TotalMinutes > 0 ? $"{(int)duration.TotalHours}h {duration.Minutes}m" : "Flexible";
+}
+
+<div class="container">
+    <article class="premium-card p-4 p-lg-5 reveal">
+        <div class="trip-card-main">
+            <div>
+                <div class="page-kicker">Trip details</div>
+                <h1 class="section-title mb-2">@(Model.Bus?.Name ?? "Premium Coach")</h1>
+                <span class="bus-type"><i class="bi bi-bus-front"></i>@(Model.Bus?.BusType ?? "Coach")</span>
+            </div>
+            <div>
+                <div class="route-line">
+                    <div class="route-dot">
+                        <i class="bi bi-circle-fill text-primary small"></i>
+                        <div>
+                            <strong>@(route?.From ?? "Origin")</strong>
+                            <div class="text-secondary small">@Model.DepartureTime.ToString("dd MMM, hh:mm tt")</div>
+                        </div>
+                    </div>
+                    <div class="route-connector"></div>
+                    <div class="route-dot">
+                        <i class="bi bi-geo-alt-fill text-success"></i>
+                        <div>
+                            <strong>@(route?.To ?? "Destination")</strong>
+                            <div class="text-secondary small">@Model.ArrivalTime.ToString("dd MMM, hh:mm tt")</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trip-meta">
+                    <span class="meta-pill"><i class="bi bi-clock"></i>@durationText</span>
+                    <span class="meta-pill"><i class="bi bi-stars"></i>Premium amenities</span>
+                </div>
+            </div>
+            <div>
+                <div class="fare">Rs. @Model.Fare<small>/seat</small></div>
+            </div>
+            <a class="btn btn-primary px-4" asp-controller="Booking" asp-action="Book" asp-route-scheduleId="@Model.Id">
+                Book Seats
+            </a>
+        </div>
+    </article>
+</div>

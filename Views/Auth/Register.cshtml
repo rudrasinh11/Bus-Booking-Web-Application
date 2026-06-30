@@ -1,0 +1,50 @@
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-xl-5">
+            <div class="auth-card reveal">
+                <div class="text-center mb-4">
+                    <span class="icon-box mb-3"><i class="bi bi-person-plus"></i></span>
+                    <div class="page-kicker">Start travelling</div>
+                    <h1 class="section-title">Create account</h1>
+                </div>
+
+                <form method="post" asp-action="Register">
+                    <div class="mb-3">
+                        <label class="form-label" for="UserName">Username</label>
+                        <div class="input-shell">
+                            <i class="bi bi-person"></i>
+                            <input id="UserName" name="UserName" required class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="Email">Email</label>
+                        <div class="input-shell">
+                            <i class="bi bi-envelope"></i>
+                            <input id="Email" name="Email" type="email" required class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="Password">Password</label>
+                        <div class="input-shell">
+                            <i class="bi bi-lock"></i>
+                            <input id="Password" name="Password" type="password" required class="form-control" />
+                        </div>
+                    </div>
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-4">@ViewBag.Error</div>
+                    }
+                    @if (ViewBag.Success != null)
+                    {
+                        <div class="alert alert-success rounded-4">@ViewBag.Success</div>
+                    }
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

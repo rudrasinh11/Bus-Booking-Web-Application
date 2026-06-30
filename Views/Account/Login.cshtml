@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-xl-5">
+            <div class="auth-card reveal">
+                <div class="text-center mb-4">
+                    <span class="icon-box mb-3"><i class="bi bi-person-circle"></i></span>
+                    <div class="page-kicker">Welcome back</div>
+                    <h1 class="section-title">Sign in</h1>
+                    <p class="text-secondary mb-0">Access your bookings and continue planning your next trip.</p>
+                </div>
+
+                <form method="post" asp-action="Login">
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <div class="input-shell">
+                            <i class="bi bi-envelope"></i>
+                            <input id="email" type="email" name="email" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <div class="input-shell">
+                            <i class="bi bi-lock"></i>
+                            <input id="password" type="password" name="password" class="form-control" required />
+                        </div>
+                    </div>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-4">@ViewBag.Error</div>
+                    }
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+
+                <p class="text-center mt-4 mb-0">
+                    Do not have an account? <a href="/Account/Register" class="fw-bold">Create one</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

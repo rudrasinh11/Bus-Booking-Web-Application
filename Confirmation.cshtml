@@ -1,0 +1,8 @@
+@model BusBookingWebApp.Models.Booking
+
+<h2>Booking Confirmed!</h2>
+<p>Booking ID: @Model.Id</p>
+<p>Customer Name: @Model.CustomerName</p>
+<p>Seats Booked: @Model.SeatsBooked</p>
+<p>Booking Time: @Model.BookingTime.ToString("g")</p>
+<a href="/Home/Index">Back to Trips</a>

@@ -1,0 +1,47 @@
+@model BusBookingWebApp.Models.Booking
+
+@{
+    ViewData["Title"] = "Booking Confirmation";
+    var farePerSeat = Model.Schedule?.Fare ?? 0;
+    var subtotal = farePerSeat * Model.SeatsBooked;
+    var gst = subtotal * 0.05m;
+    var discount = Model.SeatsBooked >= 3 ? subtotal * 0.08m : 0;
+    var totalAmount = subtotal + gst - discount;
+}
+
+<div class="container">
+    <div class="summary-card text-center reveal">
+        <span class="icon-box mb-3"><i class="bi bi-check2-circle"></i></span>
+        <div class="page-kicker">Booking confirmed</div>
+        <h1 class="section-title">Your journey is ready</h1>
+        <p class="section-copy mx-auto">Thank you, <strong>@Model.CustomerName</strong>. Your seats are reserved and the ticket is ready to download.</p>
+
+        <div class="booking-grid text-start mt-5">
+            <div class="premium-card p-4">
+                <h2 class="fw-bold mb-4">Trip details</h2>
+                <div class="summary-row"><span>Bus</span><strong>@(Model.Schedule?.Bus?.Name ?? "N/A")</strong></div>
+                <div class="summary-row"><span>Route</span><strong>@(Model.Schedule?.Bus?.Route?.From ?? "?") to @(Model.Schedule?.Bus?.Route?.To ?? "?")</strong></div>
+                <div class="summary-row"><span>Travel Date</span><strong>@Model.TravelDate.ToString("dd MMM yyyy")</strong></div>
+                <div class="summary-row"><span>Departure</span><strong>@(Model.Schedule?.DepartureTime.ToString("hh:mm tt") ?? "N/A")</strong></div>
+                <div class="summary-row"><span>Seats</span><strong>@Model.SeatsBooked (@(string.IsNullOrWhiteSpace(Model.SelectedSeatNumbers) ? "N/A" : Model.SelectedSeatNumbers))</strong></div>
+                <div class="summary-row"><span>Booking Time</span><strong>@Model.BookingTime.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
+            </div>
+
+            <div class="premium-card p-4">
+                <h2 class="fw-bold mb-4">Payment summary</h2>
+                <div class="summary-row"><span>Fare per seat</span><strong>Rs. @farePerSeat</strong></div>
+                <div class="summary-row"><span>Subtotal</span><strong>Rs. @subtotal</strong></div>
+                <div class="summary-row"><span>GST</span><strong>Rs. @gst.ToString("0.00")</strong></div>
+                <div class="summary-row"><span>Discount</span><strong>- Rs. @discount.ToString("0.00")</strong></div>
+                <div class="summary-row total-row"><span>Total Amount</span><strong>Rs. @totalAmount.ToString("0.00")</strong></div>
+                <div class="d-grid gap-2 mt-4">
+                    <a asp-action="DownloadTicket" asp-route-bookingId="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-arrow-down me-2"></i>Download Ticket
+                    </a>
+                    <a href="/Booking/MyBookings" class="btn btn-outline-primary">View My Bookings</a>
+                    <a href="/" class="btn btn-outline-secondary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
